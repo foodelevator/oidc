@@ -2,6 +2,7 @@ package op
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strings"
@@ -44,7 +45,11 @@ func Userinfo(w http.ResponseWriter, r *http.Request, userinfoProvider UserinfoP
 		httphelper.MarshalJSONWithStatus(w, err, http.StatusForbidden)
 		return
 	}
-	httphelper.MarshalJSON(w, info)
+	w.Header().Set("Content-Type", "application/jwt")
+	err = json.NewEncoder(w).Encode(info)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func ParseUserinfoRequest(r *http.Request, decoder httphelper.Decoder) (string, error) {
